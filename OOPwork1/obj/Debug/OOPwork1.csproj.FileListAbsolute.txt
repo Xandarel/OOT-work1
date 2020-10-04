@@ -1,0 +1,6 @@
+C:\Users\aobor\source\repos\OOPwork1\OOPwork1\bin\Debug\OOPwork1.exe.config
+C:\Users\aobor\source\repos\OOPwork1\OOPwork1\bin\Debug\OOPwork1.exe
+C:\Users\aobor\source\repos\OOPwork1\OOPwork1\bin\Debug\OOPwork1.pdb
+C:\Users\aobor\source\repos\OOPwork1\OOPwork1\obj\Debug\OOPwork1.csprojAssemblyReference.cache
+C:\Users\aobor\source\repos\OOPwork1\OOPwork1\obj\Debug\OOPwork1.exe
+C:\Users\aobor\source\repos\OOPwork1\OOPwork1\obj\Debug\OOPwork1.pdb
