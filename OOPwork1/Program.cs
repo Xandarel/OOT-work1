@@ -15,16 +15,16 @@ namespace OOPwork1
 
     class Person
     {
-        public int childID { get; set; }
-        public string Name { get; set; }
-        public int Age { get; set; }
-        public Sex Sex { get; set; }
-        public Person Mother { get; set; }
-        public Person Father { get; set; }
+        private int childID { get; set; }
+        public string Name { get; private set; }
+        public int Age { get; private set; }
+        public Sex Sex { get; private set; }
+        public Person Mother { get; private set; }
+        public Person Father { get; private set; }
         private List<Person> Child { get; set; }
         private Person maritalUnion { get; set; }
 
-        public Person(string name, Sex sex, int age )
+        public Person(string name, Sex sex, int age)
         {
             Name = name;
             Sex = sex;
@@ -40,8 +40,8 @@ namespace OOPwork1
                 else
                     if (mother.Sex != Sex.F)
                     throw new ArgumentException(String.Format("Не тот пол"));
-                if (mother.Age < Age)
-                    throw new ArgumentException("Мать не может быть младше ребенка");
+                if (mother.Age <= Age)
+                    throw new ArgumentException("Мать не может быть младше ребенка или равной ей по возрасту");
             }
             if (father != null)
             {
@@ -50,12 +50,12 @@ namespace OOPwork1
                 else
                     if (father.Sex != Sex.M)
                     throw new ArgumentException(String.Format("Не тот пол"));
-                if (father.Age < Age)
-                    throw new ArgumentException("Отец не может быть младше ребенка");
+                if (father.Age <= Age)
+                    throw new ArgumentException("Отец не может быть младше ребенка или равным ему по возрасту");
             }
 
         }
-        public string GetParents() => string.Format("{0} Является матерью {1}\n{2} Является отцом {1}", Mother.Name, Name, Father.Name);
+        public Person[] GetParents() => new Person[] { Mother, Father };
         public void SetChild(Person child)
         {
             if (child != this)
@@ -68,78 +68,78 @@ namespace OOPwork1
             else
                 child.SetParents(this, maritalUnion);
         }
+        public Person[] GetChild() => Child.ToArray();
 
         public static void Wedding(Person mUnion1, Person mUnion2)
         {
+            if (mUnion1.maritalUnion != null)
+                mUnion1.maritalUnion.maritalUnion = null;
             mUnion1.maritalUnion = mUnion2;
+
+            if (mUnion2.maritalUnion != null)
+                mUnion2.maritalUnion.maritalUnion = null;
             mUnion2.maritalUnion = mUnion1;
         }
 
         private List<Person> GetSistersAndBrothersParent(Person grandma, Person grandpa) => grandma.Child.Union(grandpa.Child).ToList();
 
-        public string GetCousin()
+        public Person[] GetCousin()
         {
-            var result = "Двоюродные братья и сестры:\n";
+            var ans = new List<Person>();
             if (Mother != null)
             {
                 var motherSistersAndBrothers = GetSistersAndBrothersParent(Mother.Mother, Mother.Father);
-                result += "Двоюродные братья и сестры по матери:\n";
                 foreach (var mSAB in motherSistersAndBrothers)
                 {
                     if (mSAB.childID == Mother.childID)
                         continue;
                     foreach (var cousin in mSAB.Child)
-                    {
-                        result += string.Format("\t{0}, ребенок {1}\n", cousin.Name, mSAB.Name);
-                    }
+                        ans.Add(cousin);
                 }
             }
-            if (Mother != null)
+            if (Father != null)
             {
                 var fatherSistersAndBrothers = GetSistersAndBrothersParent(Father.Mother, Father.Father);
-                result += "Двоюродные братья и сестры по отцу:\n";
                 foreach (var mSAB in fatherSistersAndBrothers)
                 {
                     if (mSAB.childID == Father.childID)
                         continue;
                     foreach (var cousin in mSAB.Child)
-                    {
-                        result += string.Format("\t{0}, ребенок {1}\n", cousin.Name, mSAB.Name);
-                    }
+                        ans.Add(cousin);
                 }
             }
 
-            return result;
+            return ans.ToArray();
         }
-        public string GetUncAlunt()
+        public Person[] GetUncAlunt()
         {
-            var result = "Дяди и Тети:\n";
+            var ans = new List<Person>();
             if (Mother.Mother != null && Mother.Father != null)
             {
                 var motherSistersAndBrothers = GetSistersAndBrothersParent(Mother.Mother, Mother.Father);
-                result += "Дяди и Тети по матери:\n";
                 foreach (var mSAB in motherSistersAndBrothers)
                 {
                     if (mSAB.childID == Mother.childID)
                         continue;
-                    result += string.Format("\t{0}\n", mSAB.Name);
+                    ans.Add(mSAB);
+                    if (mSAB.maritalUnion != null)
+                        ans.Add(mSAB.maritalUnion);
                 }
             }
             if (Father.Mother != null && Father.Father != null)
             {
                 var fatherSistersAndBrothers = GetSistersAndBrothersParent(Father.Mother, Father.Father);
-                result += "Дяди и Тети по отцу:\n";
                 foreach (var mSAB in fatherSistersAndBrothers)
                 {
                     if (mSAB.childID == Mother.childID)
                         continue;
-                    result += string.Format("\t{0}\n", mSAB.Name);
+                    ans.Add(mSAB);
                 }
             }
-            return result;
+            return ans.ToArray();
         }
 
-        public string GetInLaw() => $"Отец супруга(супруги): {maritalUnion.Father.Name}\n Мать супруга(супруги): {maritalUnion.Mother.Name}";
+        public Person[] GetInLaw() => maritalUnion != null? new Person[] { maritalUnion.Father, maritalUnion.Mother }: Array.Empty<Person>();
 
 
     }
@@ -162,10 +162,17 @@ namespace OOPwork1
             var alfred = new Person("Alfred", Sex.M, 13);
             anna.SetChild(alfred);
 
-            
-            Console.WriteLine(alfred.GetUncAlunt());
+            var alfredUncAlunt = alfred.GetUncAlunt();
+            Console.WriteLine($"Дяди и тети {alfred.Name}:");
+            foreach (var unc in alfredUncAlunt)
+            {
+                Console.WriteLine($"\t{unc.Name}");
+            }
             Console.WriteLine(frank.GetCousin());
-            Console.WriteLine(albert.GetParents());
+            var albertParents = albert.GetParents();
+            Console.WriteLine($"Родители {albert.Name}:");
+            foreach (var parent in albertParents)
+                Console.WriteLine($"Name = {parent.Name}, Sex = {parent.Sex}");
             Console.ReadKey();
         }
     }
